@@ -156,13 +156,11 @@ class Snake(GameObject):
         self.direction = choice([RIGHT, LEFT, UP, DOWN])
         screen.fill(BOARD_BACKGROUND_COLOR)
 
-    
     def check_self_collision(self):
         """Проверка столкновения змейки с собой"""
         for item in self.positions[1:]:
             if self.positions[0] == item:
                 self.reset()
-
 
     def update_direction(self):
         """
@@ -223,11 +221,13 @@ def main():
 
         pygame.display.update()
 
+
 def check_apple_collision(apple_object, snake_object):
     """Проверка съеденного яблока"""
     if apple_object.position == snake_object.positions[0]:
         snake_object.length += 1
         apple_object.randomize_position()
+
 
 def handle_keys(game_object):
     """
