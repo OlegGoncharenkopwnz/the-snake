@@ -73,9 +73,9 @@ class Apple(GameObject):
         Устанавливает случайное положение яблока на игровом поле
         — задаёт атрибуту position новое значение
         """
-        if self.position in snake:
-            self.position = (randint(1, GRID_WIDTH - 1) * GRID_SIZE,
-                             randint(1, GRID_HEIGHT - 1) * GRID_SIZE)
+        while self.position in snake:
+            self.position = (randint(0, GRID_WIDTH - 1) * GRID_SIZE,
+                             randint(0, GRID_HEIGHT - 1) * GRID_SIZE)
 
     def draw(self):
         """Отрисовывает яблоко исходя координат и параметров игровой сетки"""
