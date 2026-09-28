@@ -48,7 +48,7 @@ class GameObject():
         Инициализирует базовые атрибуты объекта,
         такие как его позиция и цвет.
         """
-        self.position = (GRID_CENTER)
+        self.position = GRID_CENTER
         self.body_color = None
 
     def draw(self):
@@ -73,11 +73,9 @@ class Apple(GameObject):
         Устанавливает случайное положение яблока на игровом поле
         — задаёт атрибуту position новое значение
         """
-        while True:
+        if self.position in snake:
             self.position = (randint(1, GRID_WIDTH - 1) * GRID_SIZE,
                              randint(1, GRID_HEIGHT - 1) * GRID_SIZE)
-            if self.position not in snake:
-                break
 
     def draw(self):
         """Отрисовывает яблоко исходя координат и параметров игровой сетки"""
@@ -140,12 +138,9 @@ class Snake(GameObject):
         Отрисовывает змейку на игровой поверхности по
         значению координат x,y в positions и параметров сетки игрового поля
         """
-        for position in self.positions[:-1]:
-            rect = (pygame.Rect(position, (GRID_SIZE, GRID_SIZE)))
-            pygame.draw.rect(screen, self.body_color, rect)
-            pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
-
-        head_rect = pygame.Rect(self.positions[0], (GRID_SIZE, GRID_SIZE))
+        head_rect = pygame.Rect(
+            self.get_head_position(), (GRID_SIZE, GRID_SIZE)
+        )
         pygame.draw.rect(screen, self.body_color, head_rect)
         pygame.draw.rect(screen, BORDER_COLOR, head_rect, 1)
 
@@ -178,11 +173,11 @@ def main():
         snake.update_direction()
         snake.move()
 
-        if apple.position == snake.positions[0]:
+        if apple.position == snake.get_head_position():
             snake.length += 1
             apple.randomize_position(snake.positions)
 
-        if snake.positions[0] in snake.positions[1:]:
+        elif snake.get_head_position() in snake.positions[1:]:
             snake.reset()
             screen.fill(BOARD_BACKGROUND_COLOR)
 
