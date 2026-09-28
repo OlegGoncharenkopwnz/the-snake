@@ -52,7 +52,7 @@ class GameObject():
 
     def draw(self):
         """Отрисовывает объект на экране."""
-        pass
+        raise NotImplementedError('Метод draw() должен быть переопределён в дочеренем классе.')
 
 
 class Apple(GameObject):
