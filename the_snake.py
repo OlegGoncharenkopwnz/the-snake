@@ -1,4 +1,4 @@
-from random import choice, randint
+from random import randint
 
 import pygame
 
@@ -39,7 +39,7 @@ pygame.display.set_caption('Змейка')
 clock = pygame.time.Clock()
 
 
-class GameObject:
+class GameObject():
     """Родительский класс"""
 
     def __init__(self):
@@ -51,11 +51,7 @@ class GameObject:
         self.body_color = None
 
     def draw(self):
-        """
-        Это абстрактный метод, который предназначен для переопределения в
-        дочерних классах. Этот метод должен определять,
-        как объект будет отрисовываться на экране.
-        """
+        """Отрисовывает объект на экране."""
         pass
 
 
@@ -67,16 +63,18 @@ class Apple(GameObject):
 
     def __init__(self):
         super().__init__()
-        self.randomize_position()
         self.body_color = APPLE_COLOR
 
-    def randomize_position(self):
+    def randomize_position(self, snake):
         """
         Устанавливает случайное положение яблока на игровом поле
         — задаёт атрибуту position новое значение
         """
-        self.position = (randint(1, GRID_WIDTH - 1) * GRID_SIZE,
-                         randint(1, GRID_HEIGHT - 1) * GRID_SIZE)
+        while True:
+            self.position = (randint(1, GRID_WIDTH - 1) * GRID_SIZE,
+                             randint(1, GRID_HEIGHT - 1) * GRID_SIZE)
+            if self.position not in snake.positions:
+                break
 
     def draw(self):
         """Отрисовывает яблоко исходя координат и параметров игровой сетки"""
@@ -95,12 +93,8 @@ class Snake(GameObject):
 
     def __init__(self):
         super().__init__()
-        self.length = 1
-        self.positions = [(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)]
-        self.direction = RIGHT
-        self.next_direction = None
         self.body_color = SNAKE_COLOR
-        self.last = None
+        self.reset()
 
     def get_head_position(self):
         """Метод возвращает координаты головы змейки — первый элемент списка"""
@@ -108,41 +102,13 @@ class Snake(GameObject):
 
     def move(self):
         """Метод бновления координат всех сегментов змейки"""
-        current_head_position = self.get_head_position()
-
-        # Обновляем список координат сравнивая значение атрибута direction
-        if self.direction == RIGHT:
-            self.positions.insert(
-                0,
-                (
-                    (current_head_position[0] + GRID_SIZE) % SCREEN_WIDTH,
-                    current_head_position[1],
-                ),
-            )
-        elif self.direction == LEFT:
-            self.positions.insert(
-                0,
-                (
-                    (current_head_position[0] - GRID_SIZE) % SCREEN_WIDTH,
-                    current_head_position[1],
-                ),
-            )
-        elif self.direction == UP:
-            self.positions.insert(
-                0,
-                (
-                    current_head_position[0],
-                    (current_head_position[1] - GRID_SIZE) % SCREEN_HEIGHT
-                ),
-            )
-        elif self.direction == DOWN:
-            self.positions.insert(
-                0,
-                (
-                    current_head_position[0],
-                    (current_head_position[1] + GRID_SIZE) % SCREEN_HEIGHT
-                ),
-            )
+        head_x, head_y = self.get_head_position()
+        vector_x, vector_y = self.direction
+        new_head_position = (
+            (head_x + vector_x * GRID_SIZE) % SCREEN_WIDTH,
+            (head_y + vector_y * GRID_SIZE) % SCREEN_HEIGHT
+        )
+        self.positions.insert(0, new_head_position)
 
         # Удаляем и сохраняем последний элемент списка координат ,
         # реализуется движение змейки
@@ -153,14 +119,9 @@ class Snake(GameObject):
         """Метод возвращает змейку в начальное состояние и обновляет экран"""
         self.length = 1
         self.positions = [(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)]
-        self.direction = choice([RIGHT, LEFT, UP, DOWN])
-        screen.fill(BOARD_BACKGROUND_COLOR)
-
-    def check_self_collision(self):
-        """Проверка столкновения змейки с собой"""
-        for item in self.positions[1:]:
-            if self.positions[0] == item:
-                self.reset()
+        self.direction = RIGHT
+        self.next_direction = None
+        self.last = None
 
     def update_direction(self):
         """
@@ -195,6 +156,7 @@ def main():
     pygame.init()
     snake = Snake()
     apple = Apple()
+    apple.randomize_position(snake)
 
     while True:
         """
@@ -213,20 +175,18 @@ def main():
         snake.update_direction()
         snake.move()
 
-        check_apple_collision(apple, snake)
-        snake.check_self_collision()
+        if apple.position == snake.positions[0]:
+            snake.length += 1
+            apple.randomize_position(snake)
+
+        if snake.positions[0] in snake.positions[1:]:
+            snake.reset()
+            screen.fill(BOARD_BACKGROUND_COLOR)
 
         snake.draw()
         apple.draw()
 
         pygame.display.update()
-
-
-def check_apple_collision(apple_object, snake_object):
-    """Проверка съеденного яблока"""
-    if apple_object.position == snake_object.positions[0]:
-        snake_object.length += 1
-        apple_object.randomize_position()
 
 
 def handle_keys(game_object):
