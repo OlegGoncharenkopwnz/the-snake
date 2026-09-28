@@ -7,6 +7,7 @@ SCREEN_WIDTH, SCREEN_HEIGHT = 640, 480
 GRID_SIZE = 20
 GRID_WIDTH = SCREEN_WIDTH // GRID_SIZE
 GRID_HEIGHT = SCREEN_HEIGHT // GRID_SIZE
+GRID_CENTER = SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2
 
 # Направления движения:
 UP = (0, -1)
@@ -47,12 +48,14 @@ class GameObject():
         Инициализирует базовые атрибуты объекта,
         такие как его позиция и цвет.
         """
-        self.position = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+        self.position = (GRID_CENTER)
         self.body_color = None
 
     def draw(self):
         """Отрисовывает объект на экране."""
-        raise NotImplementedError('Метод draw() должен быть переопределён в дочеренем классе.')
+        raise NotImplementedError(
+            'Метод draw() должен быть переопределён в дочеренем классе.'
+        )
 
 
 class Apple(GameObject):
@@ -73,7 +76,7 @@ class Apple(GameObject):
         while True:
             self.position = (randint(1, GRID_WIDTH - 1) * GRID_SIZE,
                              randint(1, GRID_HEIGHT - 1) * GRID_SIZE)
-            if self.position not in snake.positions:
+            if self.position not in snake:
                 break
 
     def draw(self):
@@ -118,7 +121,7 @@ class Snake(GameObject):
     def reset(self):
         """Метод возвращает змейку в начальное состояние и обновляет экран"""
         self.length = 1
-        self.positions = [(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)]
+        self.positions = [self.position]
         self.direction = RIGHT
         self.next_direction = None
         self.last = None
@@ -156,7 +159,7 @@ def main():
     pygame.init()
     snake = Snake()
     apple = Apple()
-    apple.randomize_position(snake)
+    apple.randomize_position(snake.positions)
 
     while True:
         """
@@ -177,7 +180,7 @@ def main():
 
         if apple.position == snake.positions[0]:
             snake.length += 1
-            apple.randomize_position(snake)
+            apple.randomize_position(snake.positions)
 
         if snake.positions[0] in snake.positions[1:]:
             snake.reset()
